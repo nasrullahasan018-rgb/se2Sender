@@ -357,3 +357,21 @@ modalOpenDownload.addEventListener('click', () => {
 });
 createQrPattern();
 fillWallets();
+
+// Export for testing (no-op in browsers)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    setTheme,
+    toggleTheme,
+    openModal,
+    closeModal,
+    formatExpiry,
+    fillWallets,
+    showToast,
+    copyToClipboard,
+    createQrPattern,
+    createCheckout,
+    productCatalog,
+    downloads,
+  };
+}

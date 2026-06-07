@@ -1,0 +1,14 @@
+{
+  "name": "se2sender",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SE2 Sender - Product landing page",
+  "scripts": {
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  }
+}
