@@ -1,6 +1,6 @@
-// Extracted from index.html <script> block
+// Main application logic — uses shared utilities from utils.js and config from config.js.
 
-// WhatsApp Chat Widget Logic
+// --- WhatsApp Chat Widget ---
 const waBtn = document.getElementById('wa-float-btn');
 const waBox = document.getElementById('wa-chat-box');
 const waClose = document.getElementById('wa-chat-close');
@@ -8,75 +8,55 @@ const waForm = document.getElementById('wa-chat-form');
 const waInput = document.getElementById('wa-chat-input');
 const waMessages = document.getElementById('wa-chat-messages');
 const waHide = document.getElementById('wa-float-hide');
-const waNumber = 'YOUR_NUMBER'; // Replace with your WhatsApp number, e.g. 8801XXXXXXXXX
+const waNumber = 'YOUR_NUMBER'; // Replace with your WhatsApp number
 
-
-// Hide WhatsApp icon if user clicks hide, restore on refresh
 if (waBtn && waHide) {
-  waHide.addEventListener('click', (e) => {
+  waHide.addEventListener('click', function(e) {
     e.stopPropagation();
     waBtn.style.display = 'none';
-    // Optionally, set a sessionStorage flag if you want to keep hidden until tab close
-    // sessionStorage.setItem('wa-hide', '1');
   });
 }
 
-// Make WhatsApp button and chat box draggable
+// Draggable WhatsApp button and chat box
 if (waBtn && waBox) {
-  let isDragging = false;
-  let dragOffsetX = 0;
-  let dragOffsetY = 0;
-  let lastX = 0;
-  let lastY = 0;
+  var isDragging = false;
+  var dragOffsetX = 0;
+  var dragOffsetY = 0;
 
   function onDragStart(e) {
     isDragging = true;
     waBtn.style.transition = 'none';
     waBox.style.transition = 'none';
-    const rect = waBtn.getBoundingClientRect();
-    if (e.type === 'touchstart') {
-      dragOffsetX = e.touches[0].clientX - rect.left;
-      dragOffsetY = e.touches[0].clientY - rect.top;
-    } else {
-      dragOffsetX = e.clientX - rect.left;
-      dragOffsetY = e.clientY - rect.top;
-    }
+    var pos = getPointerPosition(e);
+    var rect = waBtn.getBoundingClientRect();
+    dragOffsetX = pos.x - rect.left;
+    dragOffsetY = pos.y - rect.top;
     document.addEventListener('mousemove', onDragMove);
     document.addEventListener('mouseup', onDragEnd);
-    document.addEventListener('touchmove', onDragMove, {passive:false});
+    document.addEventListener('touchmove', onDragMove, {passive: false});
     document.addEventListener('touchend', onDragEnd);
   }
+
   function onDragMove(e) {
     if (!isDragging) return;
-    let clientX, clientY;
-    if (e.type === 'touchmove') {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-    let x = clientX - dragOffsetX;
-    let y = clientY - dragOffsetY;
-    // Clamp to viewport
-    const minX = 0, minY = 0;
-    const maxX = window.innerWidth - waBtn.offsetWidth;
-    const maxY = window.innerHeight - waBtn.offsetHeight;
-    x = Math.max(minX, Math.min(x, maxX));
-    y = Math.max(minY, Math.min(y, maxY));
-    waBtn.style.left = x + 'px';
-    waBtn.style.top = y + 'px';
+    var pos = getPointerPosition(e);
+    var clamped = clampToViewport(
+      pos.x - dragOffsetX,
+      pos.y - dragOffsetY,
+      waBtn.offsetWidth,
+      waBtn.offsetHeight
+    );
+    waBtn.style.left = clamped.x + 'px';
+    waBtn.style.top = clamped.y + 'px';
     waBtn.style.right = 'auto';
     waBtn.style.bottom = 'auto';
-    // Move chat box as well
     waBox.style.right = 'auto';
     waBox.style.bottom = 'auto';
-    waBox.style.left = x + 'px';
-    waBox.style.top = (y - waBox.offsetHeight - 10) + 'px';
-    lastX = x;
-    lastY = y;
+    waBox.style.left = clamped.x + 'px';
+    waBox.style.top = (clamped.y - waBox.offsetHeight - 10) + 'px';
     e.preventDefault();
   }
+
   function onDragEnd() {
     isDragging = false;
     waBtn.style.transition = '';
@@ -86,25 +66,22 @@ if (waBtn && waBox) {
     document.removeEventListener('touchmove', onDragMove);
     document.removeEventListener('touchend', onDragEnd);
   }
+
   waBtn.addEventListener('mousedown', onDragStart);
-  waBtn.addEventListener('touchstart', onDragStart, {passive:false});
-  // When chat box is opened, move it above the button
+  waBtn.addEventListener('touchstart', onDragStart, {passive: false});
+
   function updateChatBoxPosition() {
     if (waBtn.style.left && waBtn.style.top) {
-      const btnTop = parseInt(waBtn.style.top);
-      const btnHeight = waBtn.offsetHeight;
-      const boxHeight = waBox.offsetHeight;
-      let openBelow = false;
-      // If button is near the top (less than 100px), open below
-      if (btnTop < 100) openBelow = true;
+      var btnTop = parseInt(waBtn.style.top);
+      var btnHeight = waBtn.offsetHeight;
+      var boxHeight = waBox.offsetHeight;
+      var openBelow = btnTop < 100;
       waBox.style.left = waBtn.style.left;
       waBox.style.right = 'auto';
       waBox.style.bottom = 'auto';
-      if (openBelow) {
-        waBox.style.top = (btnTop + btnHeight + 10) + 'px';
-      } else {
-        waBox.style.top = (btnTop - boxHeight - 10) + 'px';
-      }
+      waBox.style.top = openBelow
+        ? (btnTop + btnHeight + 10) + 'px'
+        : (btnTop - boxHeight - 10) + 'px';
     } else {
       waBox.style.left = '';
       waBox.style.top = '';
@@ -112,72 +89,60 @@ if (waBtn && waBox) {
       waBox.style.bottom = '90px';
     }
   }
-  // When chat box is opened, update its position
-  const origShow = waBox.style.display;
-  const observer = new MutationObserver(() => {
+
+  var observer = new MutationObserver(function() {
     if (waBox.style.display === 'flex') {
       updateChatBoxPosition();
     }
   });
-  observer.observe(waBox, {attributes:true, attributeFilter:['style']});
+  observer.observe(waBox, {attributes: true, attributeFilter: ['style']});
 }
 
 if (waBtn && waBox && waClose && waForm && waInput && waMessages) {
-  waBtn.addEventListener('click', (e) => {
-    // Only open chat if not clicking the hide button
+  waBtn.addEventListener('click', function(e) {
     if (e.target === waHide) return;
     waBox.style.display = waBox.style.display === 'flex' ? 'none' : 'flex';
     if (waBox.style.display === 'flex') waInput.focus();
   });
-  waClose.addEventListener('click', () => {
+  waClose.addEventListener('click', function() {
     waBox.style.display = 'none';
   });
-  waForm.addEventListener('submit', (e) => {
+  waForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    const msg = waInput.value.trim();
+    var msg = waInput.value.trim();
     if (!msg) return;
-    // Show user message
-    const userMsg = document.createElement('div');
-    userMsg.style.cssText = 'margin:6px 0 6px auto;max-width:80%;background:#e1ffc7;padding:8px 12px;border-radius:10px 10px 2px 10px;font-size:15px;';
-    userMsg.textContent = msg;
-    waMessages.appendChild(userMsg);
-    waMessages.scrollTop = waMessages.scrollHeight;
+    createChatBubble({container: waMessages, text: msg, type: 'sent'});
     waInput.value = '';
-    // Open WhatsApp chat in new tab
-    const encoded = encodeURIComponent(msg);
-    const url = `https://wa.me/${waNumber}?text=${encoded}`;
-    window.open(url, '_blank');
-    // Optionally, show a bot reply or status
-    setTimeout(() => {
-      const botMsg = document.createElement('div');
-      botMsg.style.cssText = 'margin:6px auto 6px 0;max-width:80%;background:#f1f1f1;padding:8px 12px;border-radius:10px 10px 10px 2px;font-size:15px;color:#555;';
-      botMsg.textContent = 'Opening WhatsApp...';
-      waMessages.appendChild(botMsg);
-      waMessages.scrollTop = waMessages.scrollHeight;
+    var encoded = encodeURIComponent(msg);
+    window.open('https://wa.me/' + waNumber + '?text=' + encoded, '_blank');
+    setTimeout(function() {
+      createChatBubble({container: waMessages, text: 'Opening WhatsApp...', type: 'received'});
     }, 400);
   });
 }
+
+// --- Theme Toggle ---
 const themeToggle = document.getElementById('theme-toggle');
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
   if (theme === 'light') {
-    themeToggle.textContent = '☀️';
+    themeToggle.textContent = '\u2600\uFE0F';
     themeToggle.title = 'Switch to dark mode';
     themeToggle.setAttribute('aria-label', 'Switch to dark mode');
   } else {
-    themeToggle.textContent = '🌙';
+    themeToggle.textContent = '\uD83C\uDF19';
     themeToggle.title = 'Switch to light mode';
     themeToggle.setAttribute('aria-label', 'Switch to light mode');
   }
 }
 function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  var current = document.documentElement.getAttribute('data-theme') || 'dark';
   setTheme(current === 'dark' ? 'light' : 'dark');
 }
 themeToggle.addEventListener('click', toggleTheme);
 (function() {
-  const saved = localStorage.getItem('theme');
+  var saved = localStorage.getItem('theme');
   if (saved) {
     setTheme(saved);
   } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
@@ -186,174 +151,152 @@ themeToggle.addEventListener('click', toggleTheme);
     setTheme('dark');
   }
 })();
-const modal = document.getElementById('checkout-modal');
-const modalClose = document.getElementById('modal-close');
-const modalProduct = document.getElementById('modal-product');
-const modalSummary = document.getElementById('modal-summary');
-const modalOrderId = document.getElementById('modal-order-id');
-const modalPrice = document.getElementById('modal-price');
-const modalExpires = document.getElementById('modal-expires');
-const modalStatus = document.getElementById('modal-status');
-const modalWallets = document.getElementById('modal-wallets');
-const modalDownload = document.getElementById('modal-download');
-const modalOpenDownload = document.getElementById('modal-open-download');
-const modalCopyOrder = document.getElementById('modal-copy-order');
-const previewOrderId = document.getElementById('preview-order-id');
-const previewStatus = document.getElementById('preview-status');
-const qrGrid = document.getElementById('qr-grid');
-const copyToast = document.getElementById('copy-toast');
-const copyToastText = document.getElementById('copy-toast-text');
-const downloads = {
-  'se2-ultra-sender': 'downloads/studio-suite-pro.zip',
-  'user-create': 'downloads/vault-automation.zip',
-  'two-fa-create': 'downloads/cipher-pack.zip',
-  'remote-access-tool': 'downloads/studio-suite-pro.zip',
-  'aol-yahoo-sender': 'downloads/vault-automation.zip',
-  'micro-recoder': 'downloads/cipher-pack.zip'
-};
-let activeDownloadUrl = '';
-let activeOrderId = '';
-let toastTimer = null;
-const productCatalog = {
-  'se2-ultra-sender': {
-    name: 'SE2 Ultra Sender',
-    price: '$25 per day'
-  },
-  'user-create': {
-    name: 'User Create',
-    price: '$10 for 7 days'
-  },
-  'two-fa-create': {
-    name: '2FA Create',
-    price: '$10 for 7 days'
-  },
-  'remote-access-tool': {
-    name: 'Remote Access Tool',
-    price: '$200 per month'
-  },
-  'aol-yahoo-sender': {
-    name: 'AOL and YAHOO Sender',
-    price: '$5 per day'
-  },
-  'micro-recoder': {
-    name: 'Micro Recoder',
-    price: '$10 per month'
-  }
-};
+
+// --- Checkout Modal ---
+var els = getElementsByIds({
+  modal: 'checkout-modal',
+  modalClose: 'modal-close',
+  modalProduct: 'modal-product',
+  modalSummary: 'modal-summary',
+  modalOrderId: 'modal-order-id',
+  modalPrice: 'modal-price',
+  modalExpires: 'modal-expires',
+  modalStatus: 'modal-status',
+  modalWallets: 'modal-wallets',
+  modalDownload: 'modal-download',
+  modalOpenDownload: 'modal-open-download',
+  modalCopyOrder: 'modal-copy-order',
+  previewOrderId: 'preview-order-id',
+  previewStatus: 'preview-status',
+  qrGrid: 'qr-grid',
+  copyToast: 'copy-toast',
+  copyToastText: 'copy-toast-text'
+});
+
+var activeDownloadUrl = '';
+var activeOrderId = '';
+var toastTimer = null;
+
 function openModal() {
-  modal.classList.add('open');
-  modal.setAttribute('aria-hidden', 'false');
+  els.modal.classList.add('open');
+  els.modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
 }
+
 function closeModal() {
-  modal.classList.remove('open');
-  modal.setAttribute('aria-hidden', 'true');
+  els.modal.classList.remove('open');
+  els.modal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
 }
+
 function formatExpiry(timestamp) {
-  const date = new Date(timestamp * 1000);
-  return date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+  var date = new Date(timestamp * 1000);
+  return date.toLocaleString([], {dateStyle: 'medium', timeStyle: 'short'});
 }
-function fillWallets() {
-  const wallets = [
-    ['Binance ID', '479800206'],
-    ['USDT TRC20 Address', 'replace-in-config'],
-    ['USDT BEP20 Address', 'replace-in-config'],
-    ['BTC Address', 'replace-in-config']
-  ];
-  modalWallets.innerHTML = '';
-  wallets.forEach(([label, value]) => {
-    const row = document.createElement('div');
-    row.className = 'wallet-row';
-    row.innerHTML = `
-      <div>
-        <div style="font-size:13px;color:var(--muted);font-weight:700;">${label}</div>
-        <code>${value}</code>
-      </div>
-      <button class="copy-btn" type="button" data-copy="${value}" data-label="${label}">Copy</button>
-    `;
-    modalWallets.appendChild(row);
-  });
-  modalWallets.querySelectorAll('[data-copy]').forEach((button) => {
-    button.addEventListener('click', () => copyToClipboard(button.dataset.copy || '', button.dataset.label || ''));
-  });
-}
+
 function showToast(message) {
-  copyToastText.textContent = message;
-  copyToast.classList.add('open');
+  els.copyToastText.textContent = message;
+  els.copyToast.classList.add('open');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    copyToast.classList.remove('open');
+  toastTimer = setTimeout(function() {
+    els.copyToast.classList.remove('open');
   }, 1800);
 }
-async function copyToClipboard(text, label = '') {
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch (error) {
-    const temp = document.createElement('textarea');
-    temp.value = text;
-    document.body.appendChild(temp);
-    temp.select();
-    document.execCommand('copy');
-    temp.remove();
-  }
-  showToast(label ? `${label} copied` : 'Copied');
+
+function handleCopy(text, label) {
+  copyToClipboard(text, label, showToast);
 }
+
+function fillModalWallets() {
+  renderWalletList(els.modalWallets, WALLET_ADDRESSES, handleCopy);
+}
+
 function createQrPattern() {
-  const cells = 144;
-  let html = '';
-  for (let i = 0; i < cells; i++) {
-    const isDark = ((i + 3) % 5 === 0 || i % 11 === 0 || i % 13 === 0);
-    html += `<span class="${isDark ? '' : 'light'}"></span>`;
+  var cells = 144;
+  var html = '';
+  for (var i = 0; i < cells; i++) {
+    var isDark = ((i + 3) % 5 === 0 || i % 11 === 0 || i % 13 === 0);
+    html += '<span class="' + (isDark ? '' : 'light') + '"></span>';
   }
-  qrGrid.innerHTML = html;
+  els.qrGrid.innerHTML = html;
 }
+
 function createCheckout(productId) {
-  const orderId = 'AV-' + Math.random().toString(16).slice(2, 8).toUpperCase();
-  const expiresAt = Math.floor(Date.now() / 1000) + 3600;
-  const product = productCatalog[productId] || {
+  var product = PRODUCT_CATALOG.find(function(p) { return p.id === productId; }) || {
     name: 'Selected product',
-    price: '-'
+    priceLabel: '-',
+    download: 'downloads/studio-suite-pro.zip'
   };
-  const fileUrl = downloads[productId] || 'downloads/studio-suite-pro.zip';
+  var orderId = 'AV-' + Math.random().toString(16).slice(2, 8).toUpperCase();
+  var expiresAt = Math.floor(Date.now() / 1000) + 3600;
   activeOrderId = orderId;
-  activeDownloadUrl = fileUrl;
-  modalProduct.textContent = product.name;
-  modalSummary.textContent = 'Pay the exact amount, then wait for the gateway or webhook to approve the order.';
-  modalOrderId.textContent = orderId;
-  modalPrice.textContent = product.price;
-  modalExpires.textContent = formatExpiry(expiresAt);
-  modalStatus.textContent = 'Awaiting payment confirmation';
-  modalDownload.textContent = 'Unlocks after payment confirmation';
-  modalOpenDownload.disabled = false;
-  modalOpenDownload.textContent = 'Open download';
-  previewOrderId.textContent = orderId;
-  previewStatus.textContent = 'checkout-created';
-  fillWallets();
+  activeDownloadUrl = product.download;
+  els.modalProduct.textContent = product.name;
+  els.modalSummary.textContent = 'Pay the exact amount, then wait for the gateway or webhook to approve the order.';
+  els.modalOrderId.textContent = orderId;
+  els.modalPrice.textContent = product.priceLabel;
+  els.modalExpires.textContent = formatExpiry(expiresAt);
+  els.modalStatus.textContent = 'Awaiting payment confirmation';
+  els.modalDownload.textContent = 'Unlocks after payment confirmation';
+  els.modalOpenDownload.disabled = false;
+  els.modalOpenDownload.textContent = 'Open download';
+  els.previewOrderId.textContent = orderId;
+  els.previewStatus.textContent = 'checkout-created';
+  fillModalWallets();
   openModal();
 }
-document.querySelectorAll('.js-buy').forEach((button) => {
-  button.addEventListener('click', (event) => {
+
+// --- Dynamic Rendering from Config ---
+(function() {
+  // Render product cards
+  var productGrid = document.getElementById('product-grid');
+  if (productGrid) {
+    renderProductGrid(productGrid, PRODUCT_CATALOG);
+  }
+
+  // Render payment rails (main section)
+  var paymentRail = document.getElementById('payment-rail');
+  if (paymentRail) {
+    renderPaymentRail(paymentRail, PAYMENT_METHODS);
+  }
+
+  // Render payment rail in modal
+  var modalPaymentRail = document.getElementById('modal-payment-rail');
+  if (modalPaymentRail) {
+    renderPaymentRail(modalPaymentRail, PAYMENT_METHODS);
+  }
+
+  // Render wallet list in checkout section
+  var checkoutWallets = document.getElementById('checkout-wallets');
+  if (checkoutWallets) {
+    renderWalletList(checkoutWallets, WALLET_ADDRESSES, handleCopy);
+  }
+})();
+
+// --- Event Delegation ---
+attachCopyHandlers('.js-copy', handleCopy);
+
+document.querySelectorAll('.js-buy').forEach(function(button) {
+  button.addEventListener('click', function(event) {
     event.preventDefault();
     createCheckout(button.dataset.product || 'se2-ultra-sender');
   });
 });
-document.querySelectorAll('.js-copy').forEach((button) => {
-  button.addEventListener('click', () => copyToClipboard(button.dataset.copy || '', button.dataset.label || ''));
+
+els.modalClose.addEventListener('click', closeModal);
+els.modal.addEventListener('click', function(event) {
+  if (event.target === els.modal) closeModal();
 });
-modalClose.addEventListener('click', closeModal);
-modal.addEventListener('click', (event) => {
-  if (event.target === modal) closeModal();
-});
-document.addEventListener('keydown', (event) => {
+document.addEventListener('keydown', function(event) {
   if (event.key === 'Escape') closeModal();
 });
-modalCopyOrder.addEventListener('click', async () => {
+els.modalCopyOrder.addEventListener('click', function() {
   if (!activeOrderId) return;
-  await copyToClipboard(activeOrderId, 'Order ID');
+  handleCopy(activeOrderId, 'Order ID');
 });
-modalOpenDownload.addEventListener('click', () => {
+els.modalOpenDownload.addEventListener('click', function() {
   if (activeDownloadUrl) window.location.href = activeDownloadUrl;
 });
+
 createQrPattern();
-fillWallets();
+fillModalWallets();
