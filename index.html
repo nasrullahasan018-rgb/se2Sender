@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SE2 Community | Premium Software Store</title>
   <meta name="description" content="Premium software storefront for crypto payments and instant digital delivery.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me;">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -259,10 +260,8 @@
             <div class="checkout-status" id="preview-status">Payment-ready</div>
             <p style="color:var(--muted);line-height:1.7;">When you connect a real payment gateway, the order can be marked paid from a Binance Pay webhook or your crypto confirmation service. As soon as the order state becomes approved, the customer receives the file automatically.</p>
             <div class="wallet-list">
-              <div class="wallet-row"><div><div style="font-size:13px;color:var(--muted);font-weight:700;">Binance ID</div><code>479800206</code></div><button class="copy-btn js-copy" data-copy="479800206" data-label="Binance ID">Copy</button></div>
-              <div class="wallet-row"><div><div style="font-size:13px;color:var(--muted);font-weight:700;">USDT TRC20 Address</div><code>replace-in-config</code></div><button class="copy-btn js-copy" data-copy="replace-in-config">Copy</button></div>
-              <div class="wallet-row"><div><div style="font-size:13px;color:var(--muted);font-weight:700;">USDT BEP20 Address</div><code>replace-in-config</code></div><button class="copy-btn js-copy" data-copy="replace-in-config">Copy</button></div>
-              <div class="wallet-row"><div><div style="font-size:13px;color:var(--muted);font-weight:700;">BTC Address</div><code>replace-in-config</code></div><button class="copy-btn js-copy" data-copy="replace-in-config">Copy</button></div>
+              <!-- Wallet data is rendered dynamically from SITE_CONFIG in script.js -->
+              <div id="static-wallets"></div>
             </div>
             <div class="checkout-actions">
               <button class="btn btn-primary js-buy" data-product="se2-ultra-sender">Start with featured product</button>
