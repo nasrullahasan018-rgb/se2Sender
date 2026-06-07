@@ -1,5 +1,18 @@
 // Extracted from index.html <script> block
 
+// ── Site Configuration ──────────────────────────────────────────────
+// Replace these placeholder values with your real credentials before
+// going live. NEVER commit real API keys or wallet addresses to a
+// public repository — use environment-specific config injection or a
+// build step that reads from secrets.
+const SITE_CONFIG = Object.freeze({
+  whatsappNumber: 'YOUR_NUMBER',          // e.g. 8801XXXXXXXXX
+  binanceId:      'REPLACE_BINANCE_ID',   // e.g. 479800206
+  usdtTrc20:      'REPLACE_TRC20_ADDR',
+  usdtBep20:      'REPLACE_BEP20_ADDR',
+  btcAddress:     'REPLACE_BTC_ADDR',
+});
+
 // WhatsApp Chat Widget Logic
 const waBtn = document.getElementById('wa-float-btn');
 const waBox = document.getElementById('wa-chat-box');
@@ -8,7 +21,7 @@ const waForm = document.getElementById('wa-chat-form');
 const waInput = document.getElementById('wa-chat-input');
 const waMessages = document.getElementById('wa-chat-messages');
 const waHide = document.getElementById('wa-float-hide');
-const waNumber = 'YOUR_NUMBER'; // Replace with your WhatsApp number, e.g. 8801XXXXXXXXX
+const waNumber = SITE_CONFIG.whatsappNumber;
 
 
 // Hide WhatsApp icon if user clicks hide, restore on refresh
@@ -146,7 +159,7 @@ if (waBtn && waBox && waClose && waForm && waInput && waMessages) {
     // Open WhatsApp chat in new tab
     const encoded = encodeURIComponent(msg);
     const url = `https://wa.me/${waNumber}?text=${encoded}`;
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
     // Optionally, show a bot reply or status
     setTimeout(() => {
       const botMsg = document.createElement('div');
@@ -203,6 +216,10 @@ const previewStatus = document.getElementById('preview-status');
 const qrGrid = document.getElementById('qr-grid');
 const copyToast = document.getElementById('copy-toast');
 const copyToastText = document.getElementById('copy-toast-text');
+// WARNING: These download paths are publicly visible in client-side JS.
+// Anyone can read the source and download files without paying.
+// To properly gate downloads, serve files from a backend that checks
+// payment status and returns signed, short-lived URLs.
 const downloads = {
   'se2-ultra-sender': 'downloads/studio-suite-pro.zip',
   'user-create': 'downloads/vault-automation.zip',
@@ -256,26 +273,34 @@ function formatExpiry(timestamp) {
 }
 function fillWallets() {
   const wallets = [
-    ['Binance ID', '479800206'],
-    ['USDT TRC20 Address', 'replace-in-config'],
-    ['USDT BEP20 Address', 'replace-in-config'],
-    ['BTC Address', 'replace-in-config']
+    ['Binance ID', SITE_CONFIG.binanceId],
+    ['USDT TRC20 Address', SITE_CONFIG.usdtTrc20],
+    ['USDT BEP20 Address', SITE_CONFIG.usdtBep20],
+    ['BTC Address', SITE_CONFIG.btcAddress]
   ];
   modalWallets.innerHTML = '';
   wallets.forEach(([label, value]) => {
     const row = document.createElement('div');
     row.className = 'wallet-row';
-    row.innerHTML = `
-      <div>
-        <div style="font-size:13px;color:var(--muted);font-weight:700;">${label}</div>
-        <code>${value}</code>
-      </div>
-      <button class="copy-btn" type="button" data-copy="${value}" data-label="${label}">Copy</button>
-    `;
+
+    const info = document.createElement('div');
+    const labelEl = document.createElement('div');
+    labelEl.style.cssText = 'font-size:13px;color:var(--muted);font-weight:700;';
+    labelEl.textContent = label;
+    const code = document.createElement('code');
+    code.textContent = value;
+    info.appendChild(labelEl);
+    info.appendChild(code);
+
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', () => copyToClipboard(value, label));
+
+    row.appendChild(info);
+    row.appendChild(btn);
     modalWallets.appendChild(row);
-  });
-  modalWallets.querySelectorAll('[data-copy]').forEach((button) => {
-    button.addEventListener('click', () => copyToClipboard(button.dataset.copy || '', button.dataset.label || ''));
   });
 }
 function showToast(message) {
@@ -357,3 +382,38 @@ modalOpenDownload.addEventListener('click', () => {
 });
 createQrPattern();
 fillWallets();
+
+// Populate the static (in-page) wallet section from SITE_CONFIG
+(function populateStaticWallets() {
+  const container = document.getElementById('static-wallets');
+  if (!container) return;
+  const wallets = [
+    ['Binance ID', SITE_CONFIG.binanceId],
+    ['USDT TRC20 Address', SITE_CONFIG.usdtTrc20],
+    ['USDT BEP20 Address', SITE_CONFIG.usdtBep20],
+    ['BTC Address', SITE_CONFIG.btcAddress]
+  ];
+  wallets.forEach(([label, value]) => {
+    const row = document.createElement('div');
+    row.className = 'wallet-row';
+
+    const info = document.createElement('div');
+    const labelEl = document.createElement('div');
+    labelEl.style.cssText = 'font-size:13px;color:var(--muted);font-weight:700;';
+    labelEl.textContent = label;
+    const code = document.createElement('code');
+    code.textContent = value;
+    info.appendChild(labelEl);
+    info.appendChild(code);
+
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn js-copy';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', () => copyToClipboard(value, label));
+
+    row.appendChild(info);
+    row.appendChild(btn);
+    container.appendChild(row);
+  });
+})();
