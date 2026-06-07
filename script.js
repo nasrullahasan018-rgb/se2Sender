@@ -146,12 +146,15 @@ if (waBtn && waBox && waClose && waForm && waInput && waMessages) {
     // Open WhatsApp chat in new tab
     const encoded = encodeURIComponent(msg);
     const url = `https://wa.me/${waNumber}?text=${encoded}`;
-    window.open(url, '_blank');
-    // Optionally, show a bot reply or status
+    const waWindow = window.open(url, '_blank');
     setTimeout(() => {
       const botMsg = document.createElement('div');
       botMsg.style.cssText = 'margin:6px auto 6px 0;max-width:80%;background:#f1f1f1;padding:8px 12px;border-radius:10px 10px 10px 2px;font-size:15px;color:#555;';
-      botMsg.textContent = 'Opening WhatsApp...';
+      if (!waWindow || waWindow.closed) {
+        botMsg.textContent = 'Pop-up blocked — please allow pop-ups or open WhatsApp manually.';
+      } else {
+        botMsg.textContent = 'Opening WhatsApp...';
+      }
       waMessages.appendChild(botMsg);
       waMessages.scrollTop = waMessages.scrollHeight;
     }, 400);
@@ -161,6 +164,7 @@ const themeToggle = document.getElementById('theme-toggle');
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
+  if (!themeToggle) return;
   if (theme === 'light') {
     themeToggle.textContent = '☀️';
     themeToggle.title = 'Switch to dark mode';
@@ -175,7 +179,9 @@ function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme') || 'dark';
   setTheme(current === 'dark' ? 'light' : 'dark');
 }
-themeToggle.addEventListener('click', toggleTheme);
+if (themeToggle) {
+  themeToggle.addEventListener('click', toggleTheme);
+}
 (function() {
   const saved = localStorage.getItem('theme');
   if (saved) {
@@ -241,20 +247,25 @@ const productCatalog = {
   }
 };
 function openModal() {
+  if (!modal) { console.error('Checkout modal element not found'); return; }
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
 }
 function closeModal() {
+  if (!modal) return;
   modal.classList.remove('open');
   modal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
 }
 function formatExpiry(timestamp) {
+  if (typeof timestamp !== 'number' || !isFinite(timestamp)) return '—';
   const date = new Date(timestamp * 1000);
+  if (isNaN(date.getTime())) return '—';
   return date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
 }
 function fillWallets() {
+  if (!modalWallets) { console.error('Wallet list element not found'); return; }
   const wallets = [
     ['Binance ID', '479800206'],
     ['USDT TRC20 Address', 'replace-in-config'],
@@ -279,6 +290,7 @@ function fillWallets() {
   });
 }
 function showToast(message) {
+  if (!copyToast || !copyToastText) return;
   copyToastText.textContent = message;
   copyToast.classList.add('open');
   clearTimeout(toastTimer);
@@ -287,19 +299,32 @@ function showToast(message) {
   }, 1800);
 }
 async function copyToClipboard(text, label = '') {
+  let copied = false;
   try {
     await navigator.clipboard.writeText(text);
-  } catch (error) {
-    const temp = document.createElement('textarea');
-    temp.value = text;
-    document.body.appendChild(temp);
-    temp.select();
-    document.execCommand('copy');
-    temp.remove();
+    copied = true;
+  } catch (clipboardError) {
+    try {
+      const temp = document.createElement('textarea');
+      temp.value = text;
+      temp.style.position = 'fixed';
+      temp.style.opacity = '0';
+      document.body.appendChild(temp);
+      temp.select();
+      copied = document.execCommand('copy');
+      temp.remove();
+    } catch (fallbackError) {
+      console.error('Clipboard fallback failed:', fallbackError);
+    }
   }
-  showToast(label ? `${label} copied` : 'Copied');
+  if (copied) {
+    showToast(label ? `${label} copied` : 'Copied');
+  } else {
+    showToast('Copy failed — please copy manually');
+  }
 }
 function createQrPattern() {
+  if (!qrGrid) return;
   const cells = 144;
   let html = '';
   for (let i = 0; i < cells; i++) {
@@ -309,15 +334,27 @@ function createQrPattern() {
   qrGrid.innerHTML = html;
 }
 function createCheckout(productId) {
+  const requiredEls = { modalProduct, modalSummary, modalOrderId, modalPrice, modalExpires, modalStatus, modalDownload, modalOpenDownload, previewOrderId, previewStatus };
+  const missing = Object.entries(requiredEls).filter(([, el]) => !el).map(([name]) => name);
+  if (missing.length) {
+    console.error('Checkout cannot render — missing elements:', missing.join(', '));
+    return;
+  }
+  if (!productCatalog[productId]) {
+    console.warn('Unknown product ID:', productId, '— using defaults');
+  }
   const orderId = 'AV-' + Math.random().toString(16).slice(2, 8).toUpperCase();
   const expiresAt = Math.floor(Date.now() / 1000) + 3600;
   const product = productCatalog[productId] || {
     name: 'Selected product',
     price: '-'
   };
-  const fileUrl = downloads[productId] || 'downloads/studio-suite-pro.zip';
+  const fileUrl = downloads[productId];
+  if (!fileUrl) {
+    console.warn('No download URL for product:', productId, '— download will be unavailable');
+  }
   activeOrderId = orderId;
-  activeDownloadUrl = fileUrl;
+  activeDownloadUrl = fileUrl || '';
   modalProduct.textContent = product.name;
   modalSummary.textContent = 'Pay the exact amount, then wait for the gateway or webhook to approve the order.';
   modalOrderId.textContent = orderId;
@@ -325,8 +362,8 @@ function createCheckout(productId) {
   modalExpires.textContent = formatExpiry(expiresAt);
   modalStatus.textContent = 'Awaiting payment confirmation';
   modalDownload.textContent = 'Unlocks after payment confirmation';
-  modalOpenDownload.disabled = false;
-  modalOpenDownload.textContent = 'Open download';
+  modalOpenDownload.disabled = !fileUrl;
+  modalOpenDownload.textContent = fileUrl ? 'Open download' : 'Download unavailable';
   previewOrderId.textContent = orderId;
   previewStatus.textContent = 'checkout-created';
   fillWallets();
@@ -341,19 +378,31 @@ document.querySelectorAll('.js-buy').forEach((button) => {
 document.querySelectorAll('.js-copy').forEach((button) => {
   button.addEventListener('click', () => copyToClipboard(button.dataset.copy || '', button.dataset.label || ''));
 });
-modalClose.addEventListener('click', closeModal);
-modal.addEventListener('click', (event) => {
-  if (event.target === modal) closeModal();
-});
+if (modalClose) {
+  modalClose.addEventListener('click', closeModal);
+}
+if (modal) {
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) closeModal();
+  });
+}
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') closeModal();
 });
-modalCopyOrder.addEventListener('click', async () => {
-  if (!activeOrderId) return;
-  await copyToClipboard(activeOrderId, 'Order ID');
-});
-modalOpenDownload.addEventListener('click', () => {
-  if (activeDownloadUrl) window.location.href = activeDownloadUrl;
-});
+if (modalCopyOrder) {
+  modalCopyOrder.addEventListener('click', async () => {
+    if (!activeOrderId) return;
+    await copyToClipboard(activeOrderId, 'Order ID');
+  });
+}
+if (modalOpenDownload) {
+  modalOpenDownload.addEventListener('click', () => {
+    if (activeDownloadUrl) {
+      window.location.href = activeDownloadUrl;
+    } else {
+      showToast('Download not available for this product');
+    }
+  });
+}
 createQrPattern();
 fillWallets();
