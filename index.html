@@ -93,116 +93,7 @@
           </div>
           <a class="btn btn-ghost" href="#checkout">See checkout</a>
         </div>
-        <div class="product-grid">
-          <article class="product-card panel" style="--product-accent: var(--accent-blue);">
-            <span class="badge">Flagship</span>
-            <h3 class="product-title">SE2 Ultra Sender</h3>
-            <p style="color:var(--muted);line-height:1.7;">Premium delivery-focused app slot for your main software product.</p>
-            <div class="price-row">
-                <div><div class="price">$25</div><div class="price-note">per day</div></div>
-              <div class="status" style="background: rgba(255,255,255,0.04); color: #dbeafe;">Ready</div>
-            </div>
-            <ul class="bullet-list">
-              <li>Unlimited daily email delivery</li>
-              <li>Instant checkout integration</li>
-              <li>Secure digital file transfer</li>
-            </ul>
-            <div class="card-actions">
-              <button class="btn btn-primary js-buy" data-product="se2-ultra-sender">Buy now</button>
-              <a class="btn btn-secondary" href="#checkout">Checkout info</a>
-            </div>
-          </article>
-          <article class="product-card panel" style="--product-accent: var(--accent-cyan);">
-            <span class="badge">Utility</span>
-            <h3 class="product-title">User Create</h3>
-            <p style="color:var(--muted);line-height:1.7;">Account setup and user provisioning app slot for your catalog.</p>
-            <div class="price-row">
-                <div><div class="price">$10</div><div class="price-note">7 days</div></div>
-              <div class="status" style="background: rgba(255,255,255,0.04); color: #dbeafe;">Ready</div>
-            </div>
-            <ul class="bullet-list">
-              <li>Quick onboarding</li>
-              <li>Simple setup flow</li>
-              <li>Protected delivery</li>
-            </ul>
-            <div class="card-actions">
-              <button class="btn btn-primary js-buy" data-product="user-create">Buy now</button>
-              <a class="btn btn-secondary" href="#checkout">Checkout info</a>
-            </div>
-          </article>
-          <article class="product-card panel" style="--product-accent: var(--accent-gold);">
-            <span class="badge">Security</span>
-            <h3 class="product-title">2FA Create</h3>
-            <p style="color:var(--muted);line-height:1.7;">A premium security app slot for two-factor authentication workflows.</p>
-            <div class="price-row">
-                <div><div class="price">$10</div><div class="price-note">7 days</div></div>
-              <div class="status" style="background: rgba(255,255,255,0.04); color: #dbeafe;">Ready</div>
-            </div>
-            <ul class="bullet-list">
-              <li>Security-first positioning</li>
-              <li>Fast checkout option</li>
-              <li>Instant file access</li>
-            </ul>
-            <div class="card-actions">
-              <button class="btn btn-primary js-buy" data-product="two-fa-create">Buy now</button>
-              <a class="btn btn-secondary" href="#checkout">Checkout info</a>
-            </div>
-          </article>
-          <article class="product-card panel" style="--product-accent: var(--accent-green);">
-            <span class="badge">Support</span>
-            <h3 class="product-title">Remote Access Tool</h3>
-            <p style="color:var(--muted);line-height:1.7;">Remote support and access utility presented as a polished premium app.</p>
-            <div class="price-row">
-                <div><div class="price">$200</div><div class="price-note">per month</div></div>
-              <div class="status" style="background: rgba(255,255,255,0.04); color: #dbeafe;">Ready</div>
-            </div>
-            <ul class="bullet-list">
-              <li>Support-friendly layout</li>
-              <li>Instant digital delivery</li>
-              <li>Branded product card</li>
-            </ul>
-            <div class="card-actions">
-              <button class="btn btn-primary js-buy" data-product="remote-access-tool">Buy now</button>
-              <a class="btn btn-secondary" href="#checkout">Checkout info</a>
-            </div>
-          </article>
-          <article class="product-card panel" style="--product-accent: var(--accent-blue);">
-            <span class="badge">Messaging</span>
-            <h3 class="product-title">AOL and YAHOO Sender</h3>
-            <p style="color:var(--muted);line-height:1.7;">A messaging app listing with a clean premium presentation for your catalog.</p>
-            <div class="price-row">
-                <div><div class="price">$5</div><div class="price-note">per day</div></div>
-              <div class="status" style="background: rgba(255,255,255,0.04); color: #dbeafe;">Ready</div>
-            </div>
-            <ul class="bullet-list">
-              <li>Clean product layout</li>
-              <li>Crypto checkout ready</li>
-              <li>Protected downloads</li>
-            </ul>
-            <div class="card-actions">
-              <button class="btn btn-primary js-buy" data-product="aol-yahoo-sender">Buy now</button>
-              <a class="btn btn-secondary" href="#checkout">Checkout info</a>
-            </div>
-          </article>
-          <article class="product-card panel" style="--product-accent: var(--accent-cyan);">
-            <span class="badge">Recorder</span>
-            <h3 class="product-title">Micro Recoder</h3>
-            <p style="color:var(--muted);line-height:1.7;">Compact recording app slot for your software lineup.</p>
-            <div class="price-row">
-                <div><div class="price">$10</div><div class="price-note">per month</div></div>
-              <div class="status" style="background: rgba(255,255,255,0.04); color: #dbeafe;">Ready</div>
-            </div>
-            <ul class="bullet-list">
-              <li>Minimal premium card</li>
-              <li>Instant purchase button</li>
-              <li>Secure file flow</li>
-            </ul>
-            <div class="card-actions">
-              <button class="btn btn-primary js-buy" data-product="micro-recoder">Buy now</button>
-              <a class="btn btn-secondary" href="#checkout">Checkout info</a>
-            </div>
-          </article>
-        </div>
+        <div class="product-grid" id="product-grid"></div>
       </section>
 
       <section class="section panel" id="how-it-works">
@@ -238,12 +129,7 @@
             <p>Place your Binance Pay merchant details and wallet addresses into the config section to turn this design into a live store.</p>
           </div>
         </div>
-        <div class="payment-rail">
-          <div class="payment-card panel"><div class="badge" style="color: var(--accent-blue);">BINANCE PAY</div><strong>Binance Pay</strong><span>Fast checkout with Binance Pay QR or merchant ID.</span></div>
-          <div class="payment-card panel"><div class="badge" style="color: var(--accent-cyan);">TRC20</div><strong>USDT TRC20</strong><span>Low-fee stablecoin transfer for instant confirmation.</span></div>
-          <div class="payment-card panel"><div class="badge" style="color: var(--accent-green);">BEP20</div><strong>USDT BEP20</strong><span>Cheap BNB Smart Chain settlement.</span></div>
-          <div class="payment-card panel"><div class="badge" style="color: var(--accent-gold);">MULTI-CHAIN</div><strong>BTC / ETH / SOL</strong><span>Support for major crypto assets through your gateway.</span></div>
-        </div>
+        <div class="payment-rail" id="payment-rail"></div>
       </section>
 
       <section class="section panel" id="checkout">
@@ -258,12 +144,7 @@
             <h3>Sell premium software with confidence</h3>
             <div class="checkout-status" id="preview-status">Payment-ready</div>
             <p style="color:var(--muted);line-height:1.7;">When you connect a real payment gateway, the order can be marked paid from a Binance Pay webhook or your crypto confirmation service. As soon as the order state becomes approved, the customer receives the file automatically.</p>
-            <div class="wallet-list">
-              <div class="wallet-row"><div><div style="font-size:13px;color:var(--muted);font-weight:700;">Binance ID</div><code>479800206</code></div><button class="copy-btn js-copy" data-copy="479800206" data-label="Binance ID">Copy</button></div>
-              <div class="wallet-row"><div><div style="font-size:13px;color:var(--muted);font-weight:700;">USDT TRC20 Address</div><code>replace-in-config</code></div><button class="copy-btn js-copy" data-copy="replace-in-config">Copy</button></div>
-              <div class="wallet-row"><div><div style="font-size:13px;color:var(--muted);font-weight:700;">USDT BEP20 Address</div><code>replace-in-config</code></div><button class="copy-btn js-copy" data-copy="replace-in-config">Copy</button></div>
-              <div class="wallet-row"><div><div style="font-size:13px;color:var(--muted);font-weight:700;">BTC Address</div><code>replace-in-config</code></div><button class="copy-btn js-copy" data-copy="replace-in-config">Copy</button></div>
-            </div>
+            <div class="wallet-list" id="checkout-wallets"></div>
             <div class="checkout-actions">
               <button class="btn btn-primary js-buy" data-product="se2-ultra-sender">Start with featured product</button>
               <a class="btn btn-secondary" href="#faq">Read FAQ</a>
@@ -353,12 +234,7 @@
         </div>
         <div class="order-card panel">
           <div class="checkout-status">Payment options</div>
-          <div class="payment-rail" style="grid-template-columns:1fr 1fr;">
-            <div class="payment-card panel"><div class="badge" style="color: var(--accent-blue);">BINANCE PAY</div><strong>Binance Pay</strong><span>Fast checkout with Binance Pay QR or merchant ID.</span></div>
-            <div class="payment-card panel"><div class="badge" style="color: var(--accent-cyan);">TRC20</div><strong>USDT TRC20</strong><span>Low-fee stablecoin transfer for instant confirmation.</span></div>
-            <div class="payment-card panel"><div class="badge" style="color: var(--accent-green);">BEP20</div><strong>USDT BEP20</strong><span>Cheap BNB Smart Chain settlement.</span></div>
-            <div class="payment-card panel"><div class="badge" style="color: var(--accent-gold);">MULTI-CHAIN</div><strong>BTC / ETH / SOL</strong><span>Support for major crypto assets through your gateway.</span></div>
-          </div>
+          <div class="payment-rail" id="modal-payment-rail" style="grid-template-columns:1fr 1fr;"></div>
           <div class="wallet-list" style="margin-top:18px;" id="modal-wallets"></div>
         </div>
       </div>
@@ -386,6 +262,8 @@
       <button type="submit" style="background:#25D366;border:none;color:#fff;padding:0 18px;font-size:16px;font-weight:700;cursor:pointer;">Send</button>
     </form>
   </div>
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
